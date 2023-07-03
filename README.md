@@ -1,6 +1,6 @@
 # Carrierwave Google Storage
 
-[![Build Status](https://travis-ci.org/metaware/carrierwave-google-storage.svg?branch=master)](https://travis-ci.org/metaware/carrierwave-google-storage)
+[![Build Status](https://github.com/carrierwaveuploader/carrierwave-google-storage/workflows/Test/badge.svg)](https://github.com/carrierwaveuploader/carrierwave-google-storage/actions)
 [![Code Climate](https://codeclimate.com/github/metaware/carrierwave-google-storage/badges/gpa.svg)](https://codeclimate.com/github/metaware/carrierwave-google-storage)
 [![Gem Version](https://badge.fury.io/rb/carrierwave-google-storage.svg)](https://badge.fury.io/rb/carrierwave-google-storage)
 
@@ -32,6 +32,7 @@ CarrierWave.configure do |config|
   config.gcloud_bucket                       = 'your-bucket-name'
   config.gcloud_bucket_is_public             = true
   config.gcloud_authenticated_url_expiration = 600
+  config.gcloud_content_disposition          = 'attachment' // or you can skip this
   
   config.gcloud_attributes = {
     expires: 600

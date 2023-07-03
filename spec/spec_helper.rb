@@ -9,14 +9,12 @@ FeatureUploader = Class.new(CarrierWave::Uploader::Base) do
 end
 
 def source_environment_file!
-  if File.exists?('.env')
+  if File.exist?('.env')
     File.readlines('.env').each do |line|
       key, value = line.split('=')
       ENV[key] = value.chomp
     end
   end
-
-  ENV['GCLOUD_KEYFILE'] = Dir.pwd + '/.gcp-keyfile.json'
 end
 
 RSpec.configure do |config|
@@ -35,19 +33,15 @@ RSpec.configure do |config|
 
   config.before(:all, type: :feature) do
     CarrierWave.configure do |config|
+      config.cache_storage                       = :gcloud
       config.storage                             = :gcloud
       config.gcloud_bucket                       = ENV['GCLOUD_BUCKET']
       config.gcloud_bucket_is_public             = true
       config.gcloud_authenticated_url_expiration = 600
-      config.store_dir                           = 'uploaded_files'
+      config.store_dir                           = ['uploaded_files', ENV['BUILD_ID'].presence].compact.join('_')
 
       config.gcloud_attributes = {
         expires: 600
-      }
-
-      config.gcloud_credentials = {
-        gcloud_project: ENV['GCLOUD_PROJECT'],
-        gcloud_keyfile: ENV['GCLOUD_KEYFILE']
       }
     end
   end

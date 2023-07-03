@@ -1,14 +1,16 @@
 # frozen_string_literal: true
 
+require 'active_support/core_ext/module/delegation'
+
 module CarrierWave
   module Storage
     class GcloudFile
       GCLOUD_STORAGE_URL = 'https://storage.googleapis.com'
 
       attr_writer :file
-      attr_accessor :uploader, :connection, :path, :gcloud_options, :file_exists
+      attr_accessor :uploader, :connection, :path, :file_exists
 
-      delegate :content_type, :size, to: :file
+      delegate :content_disposition, :content_type, :size, to: :file, allow_nil: true
 
       def initialize(uploader, connection, path)
         @uploader   = uploader
@@ -32,7 +34,7 @@ module CarrierWave
       end
 
       def delete
-        deleted = file.delete
+        deleted = file ? file.delete : true
         @file = nil if deleted
         deleted
       end
@@ -58,19 +60,29 @@ module CarrierWave
       end
 
       def store(new_file)
-        new_file_path = uploader.filename ? uploader.filename : new_file.filename
-        bucket.create_file(
-          new_file.path, path, content_type: new_file.content_type
-        )
+        if new_file.is_a?(self.class)
+          new_file.copy_to(path)
+        else
+          @file = bucket.create_file(
+            new_file.path,
+            path,
+            acl: uploader.gcloud_bucket_is_public ? 'publicRead' : nil,
+            content_type: new_file.content_type,
+            content_disposition: uploader.gcloud_content_disposition
+          )
+        end
         self
       end
 
       def copy_to(new_path)
-        file.copy("#{uploader.store_dir}/#{new_path}")
+        file.copy(
+          new_path,
+          acl: uploader.gcloud_bucket_is_public ? 'publicRead' : nil
+        )
       end
 
       def url(options = {})
-        uploader.gcloud_bucket_is_public ? public_url : authenticated_url
+        uploader.gcloud_bucket_is_public ? public_url : authenticated_url(options)
       end
 
       def authenticated_url(options = {})
@@ -91,7 +103,7 @@ module CarrierWave
       private
 
       def bucket
-        connection
+        @bucket ||= connection.bucket(uploader.gcloud_bucket, skip_lookup: true)
       end
     end
   end
