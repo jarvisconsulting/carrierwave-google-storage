@@ -89,7 +89,6 @@ module CarrierWave
         if uploader.gcloud_authenticated_url_expiration
           options = { expires: uploader.gcloud_authenticated_url_expiration }.merge(options)
         end
-        options = { path: path }.merge(options)
         bucket.signed_url(**options)
       end
 
