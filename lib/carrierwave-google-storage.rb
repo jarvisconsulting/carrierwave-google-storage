@@ -3,6 +3,7 @@ require 'carrierwave'
 require 'carrierwave/google/storage/version'
 require 'carrierwave/storage/gcloud'
 require 'carrierwave/storage/gcloud_file'
+require 'carrierwave/storage/iam_signer'
 require 'carrierwave/support/uri_filename'
 
 module CarrierWave
